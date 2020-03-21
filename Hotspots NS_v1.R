@@ -20,6 +20,7 @@ library(tidyverse)
 library(glmnet)
 library(mltools)
 library(data.table)
+library(xgboost)
 
 # Load the Data
 
@@ -93,7 +94,9 @@ train <- train %>% mutate(lagged_PDSI = PDSI_new)
 train <- train %>% filter(PDSI_lagged != 0)
 
 # Remove variables that are unneccesary for prediction 
-train <- train %>% select(-c("ID", "date", "area"))
+train <- train %>% select(-c("ID", "area", "year", "climate_swe", "lat"))
+
+# Remove additional columns
 
 view(train[1:10,])
 #############################################
@@ -118,17 +121,27 @@ dim(validmodel)
 #############################################
 ######Simple Model
 # Define input and output columns
-in_cols <- names(train[,-c(1:7)])
+in_cols <- names(train[,-c(1,3)])
 target_col <- "burn_area"
 in_cols
 
 # Get our X and y training and validation sets ready
-X_train <- trainmodel[,c(target_col,in_cols)]
+X_trainXG <- trainmodel[,in_cols]
+Y_trainXG <- trainmodel[,target_col]
 
 X_valid <- validmodel[,in_cols]
 Y_valid <- validmodel[,target_col]
+head(X_train)
 
-# Create and fit the model
+### --- XGBoost --- ###
+bst <- xgboost(data = data.matrix(X_trainXG),
+               label = Y_trainXG,
+               nrounds=40)
+
+xg_pred <- predict(bst, data.matrix(X_train))
+xg_pred <- data.frame(xg_pred)
+
+# Create the linear model and fit the model
 model <- lm(burn_area ~ ., X_train)
 
 # Make predictions
