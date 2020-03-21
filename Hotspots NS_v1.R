@@ -99,11 +99,9 @@ view(train[1:10,])
 #############################################
 
 
-
-## Adding more features - some ideas
-# Read the list of climate variables and what they mean. See if you can combine them in interesting ways - perhaps a 'hot_and_dry' metric...
-# Fire depends on some processes that take a long time - for example, there may be more fuel if the previous growing season was a good one. Consider some lagged variables to give the model some inputs for what came before the current month.
-# Make some categorical features - 'dominant_land_type' or 'is_peak_rainfall'.
+################################################################################
+## -- FEATURE ENGINEERING ENDS HERE -- ##
+################################################################################.
 
 
 #############################################
@@ -152,9 +150,6 @@ train <- filter(PDSI_lagged != 0)
 train_all <- train
 trainmodel <- train_all[train_all$date <= '2011-01-01',]
 
-################################################################################
-                     ## -- FEATURE ENGINEERING ENDS HERE -- ##
-################################################################################
 ### Doing the ridge regression
 x_var <- as.matrix(trainmodel %>% select(-c("area","burn_area")))
 y_var <- as.matrix(trainmodel %>% select(( "burn_area")))
